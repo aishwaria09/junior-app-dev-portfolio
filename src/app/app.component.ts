@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { TaskManagerComponent } from './task-manager/task-manager.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  standalone: true,
+  imports: [TaskManagerComponent],  // Only import the component you use
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  template: `<app-task-manager></app-task-manager>`
 })
-export class AppComponent {
-  title = 'junior-app-dev';
-}
+export class AppComponent {}
+
