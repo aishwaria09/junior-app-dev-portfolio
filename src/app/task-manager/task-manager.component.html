@@ -1,34 +1,71 @@
-<div class="task-container">
-  <h2>Task Manager</h2>
+<div class="container">
+  <h1>Task Manager</h1>
 
-  <form (submit)="addTask(); $event.preventDefault()">
-    <input
-      type="text"
-      [(ngModel)]="newTask"
-      name="taskInput"
-      placeholder="Enter task"
-      required
-    />
-    <button type="submit">Add Task</button>
-  </form>
+  <div class="input-form">
+    <input [(ngModel)]="newTitle" (input)="onInputChange()" placeholder="Task Title *" />
+    <textarea [(ngModel)]="newDescription" placeholder="Description"></textarea>
+        <div class="datetime-wrapper">
+          <!-- Show fake input when empty -->
+            <input *ngIf="!newReminder && !reminderFocused"
+              type="text"
+              class="fake-datetime"
+              value=""
+              placeholder="Add Reminder"
+              (focus)="reminderFocused = true"
+            />
 
-  <div class="task-section">
-    <h3>Pending Tasks</h3>
-    <ul>
-      <li *ngFor="let task of pendingTasks">
-        <input type="checkbox" (change)="markAsDone(task)" />
-        {{ task.name }}
-      </li>
-    </ul>
+          <!-- Show real datetime input -->
+             <input *ngIf="newReminder || reminderFocused"
+                type="datetime-local"
+                [(ngModel)]="newReminder"
+                [min]="getMinDateTime()"
+                class="real-datetime"
+                (blur)="reminderFocused = false"
+             />
+        </div>
+
+      <button (click)="addTask()">Add Task</button>
   </div>
 
-  <div class="task-section" *ngIf="completedTasks.length > 0">
-    <h3>Completed Tasks</h3>
-    <ul>
-      <li *ngFor="let task of completedTasks">
-        <input type="checkbox" checked disabled />
-        <s>{{ task.name }}</s>
-      </li>
-    </ul>
+  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <p class="warning" *ngIf="warningMessage">{{ warningMessage }}</p>
+
+  <div class="status-columns">
+    <div *ngFor="let status of statuses" class="status-column">
+      <h2>{{ status | titlecase }}</h2>
+      <div *ngIf="getTasksByStatus(status).length === 0" class="no-tasks">No tasks here</div>
+
+      <div *ngFor="let task of getTasksByStatus(status)" [ngClass]="['task-card', task.status, task.isPriority ? 'priority' : '']">
+        <div class="task-header">
+          <div class="task-title">
+            <input [(ngModel)]="task.title" readonly />
+          </div>
+          <div class="task-actions">
+            <button *ngIf="task.status !== 'completed'" class="icon-btn" (click)="toggleEdit(task)">✏️</button>
+            <button class="icon-btn" (click)="deleteTask(task)">🗑️</button>
+          </div>
+        </div>
+
+        <div class="task-body">
+          <textarea
+            [(ngModel)]="task.description"
+            [readonly]="!task.isEditing"
+            placeholder="No description"
+          ></textarea>
+
+          <input
+            type="datetime-local"
+            [(ngModel)]="task.reminder"
+            [readonly]="!task.isEditing"
+          />
+        </div>
+
+        <div class="task-footer">
+          <button *ngIf="task.status === 'new'" (click)="markAsPending(task)">Mark as Pending</button>
+          <button *ngIf="task.status !== 'completed'" (click)="markAsCompleted(task)">Mark as Completed</button>
+          <button *ngIf="task.isEditing" (click)="saveEdit(task)">💾 Save</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
